@@ -11,7 +11,7 @@ class Ner:
     cuda: bool
     cuda_core: str
 
-    def __init__(self, model_path: str, cuda_support: bool, cuda_core: str):
+    def __init__(self, model_path: str, cuda_support: bool, cuda_core: str, aggregation_strategy: str):
         self.cuda = cuda_support
         self.cuda_core = cuda_core
         self.model = AutoModelForTokenClassification.from_pretrained(model_path)
@@ -23,7 +23,7 @@ class Ner:
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-        self.nlp = pipeline("ner", model=self.model, tokenizer=self.tokenizer, device=device)
+        self.nlp = pipeline("ner", model=self.model, tokenizer=self.tokenizer, device=device, aggregation_strategy=aggregation_strategy)
 
 
     async def do(self, input: NerInput):
@@ -58,6 +58,7 @@ class Ner:
             item['certainty'] = float(item.pop('score'))
             item['startPosition'] = item.pop('start')
             item['endPosition'] = item.pop('end')
-            del item['index']
+            if 'index' in item:
+                del item['index']
 
         return ner_results

@@ -28,7 +28,13 @@ def startup_event():
     else:
         logger.info("Running on CPU")
 
-    ner = Ner('./models/model', cuda_support, cuda_core)
+    strategy = os.getenv("AGGREGATION_STRATEGY")
+    if strategy is None or strategy == "":
+        strategy = "none"
+    
+    logger.info(f"Aggregation strategy set to {strategy}")
+
+    ner = Ner('./models/model', cuda_support, cuda_core, strategy)
     meta_config = Meta('./models/model')
 
 
@@ -56,6 +62,7 @@ async def read_item(item: NerInput, response: Response):
         '''
         tokens = [{
                 "entity": "string",
+                "entity_group": "string",
                 "word": "string",
                 "certainty": 0.9     # float
                 "startPosition": 1   # int
